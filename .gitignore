@@ -1,4 +1,5 @@
 
 cred.py
-Spotify.code-workspace
-.cache
+Spotify.code-workspace.json
+.*
+!/.gitignore
