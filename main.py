@@ -22,8 +22,10 @@ def getTracks(playlistID):
         tracks.extend(results['items'])
     return tracks
 
+#Gets the image info for a playlist or artist
 def getImage(item,size):
 
+    #If no image is given, return null
     if len(item['images']) == 0:
         return "null","null","null"
 
@@ -56,8 +58,9 @@ artistIDs = []
 albumIDs = []
 
 #Primary key counters
-playlistPri = 1
-counter = 1
+playlistPri = 1 #playlist primary key
+counter = 1     #Song counter for printing purposes
+
 #Loops though all of my playlists
 for playlist in playlists['items']:
 
