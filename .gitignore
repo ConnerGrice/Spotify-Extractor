@@ -1,3 +1,4 @@
 .cache
 Spotify.code-workspace
 cred.py
+__pycache__
