@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, Iterable, List
 import sqlite3
 from abc import ABC, abstractmethod
 
@@ -15,7 +15,7 @@ class Table(ABC):
             self.database.rollback()
             raise e
 
-    def sql_command_many(self,command:str,inputs:List) -> None:
+    def sql_command_many(self,command:str,inputs:Iterable) -> None:
         """Executes command with many arguments"""
         try:
             self.cursor.executemany(command,inputs)
@@ -49,6 +49,9 @@ class Table(ABC):
     def populate_table(self,data):
         pass
 
+    @abstractmethod
+    def select_rows(self) -> List:
+        pass
 
 class Playlists(Table):
     def __init__(self,database):
@@ -60,8 +63,10 @@ class Playlists(Table):
             print("Creating Playlists")
 
     def create_table(self) -> None:
-        create = """
-        CREATE TABLE IF NOT EXISTS "Playlists"(
+        """Creates a Playlists table"""
+
+        create = f"""
+        CREATE TABLE IF NOT EXISTS "{self.NAME}"(
             PlaylistID int NOT NULL,
             Name char(255) NOT NULL,
             Owner char(255) NOT NULL,
@@ -73,17 +78,37 @@ class Playlists(Table):
         self.sql_command_single(create)
 
 
-    def populate_table(self,data) -> None:
-        print("populate table")
+    def populate_table(self,data:Iterable) -> None:
+        """Populates the Playlists table"""
+        
+        command = f"""
+        INSERT INTO {self.NAME} VALUES
+        (?,?,?,?,?)"""
+
+        self.sql_command_single(command,data)
+
+    def select_rows(self,*,id=None,name=None,owner=None,length=None,version=None) -> List:
+        search_dict = {key:value for (key,value) in locals().items() if key != 'self'}
+        search_args = tuple([value for value in search_dict.values()])
+
+        return search_args
 
 class Artists(Table):
     def __init__(self,database):
         super().__init__(database)
         self.NAME = "Artists"
 
+        #Creates table if it doesnt exist
+        if not self.check_exists():
+            self.create_table()
+            print("Creating Playlists")
+        
+
     def create_table(self) -> None:
-        create = """
-        CREATE TABLE IF NOT EXISTS "Artist"(
+        """Creates an Artist table"""
+
+        create = F"""
+        CREATE TABLE IF NOT EXISTS "{self.NAME}"(
             ArtistID int NOT NULL,
             Name char(255) NOT NULL,
             Genre char(255) NOT NULL,
@@ -92,17 +117,30 @@ class Artists(Table):
 
         self.sql_command_single(create)
     
-    def populate_table(self, data: List[Any]) -> None:
-        print("Populate Table")
+    def populate_table(self,data:Iterable) -> None:
+        """Populates the Artists table"""
+        
+        command = f"""
+        INSERT INTO {self.NAME} VALUES
+        (?,?,?)"""
+
+        self.sql_command_single(command,data)
 
 class Albums(Table):
     def __init__(self,database):
         super().__init__(database)
         self.NAME = "Albums"
 
+        #Creates table if it doesn't exist
+        if not self.check_exists():
+            self.create_table()
+            print("Creating Playlists")
+
     def create_table(self) -> None:
-        create = """
-        CREATE TABLE IF NOT EXISTS "Albums"(
+        """Creates an Albums table"""
+
+        create = F"""
+        CREATE TABLE IF NOT EXISTS "{self.NAME}"(
             AblumID int NOT NULL,
             Name char(255) NOT NULL,
             ReleaseDate date NOT NULL,
@@ -113,22 +151,36 @@ class Albums(Table):
 
         self.sql_command_single(create)
     
-    def populate_table(self, data: List[Any]) -> None:
-        print("Populate Table")
+
+    def populate_table(self,data:Iterable) -> None:
+        """Populates the Albums table"""
+        
+        command = f"""
+        INSERT INTO {self.NAME} VALUES
+        (?,?,?,?)"""
+
+        self.sql_command_single(command,data)
 
 class Songs(Table):
     def __init__(self,database):
         super().__init__(database)
         self.NAME = "Songs"
+    
+        #Creates table if it doesn't exist
+        if not self.check_exists():
+            self.create_table()
+            print("Creating Playlists")
 
     def create_table(self) -> None:
+        """Creates a Songs table"""
+
         create = """
         CREATE TABLE IF NOT EXISTS "Songs"(
             SongID int NOT NULL,
             Name char(255) NOT NULL,
             Duration int NOT NULL,
             Dance float NOT NULL,
-            Temp0 float NOT NULL,
+            Tempo float NOT NULL,
             Energy float NOT NULL,
             ArtistID int NOT NULL,
             AblumID int NOT NULL,
@@ -141,8 +193,15 @@ class Songs(Table):
 
         self.sql_command_single(create)
     
-    def populate_table(self, data: List[Any]) -> None:
-        print("Populate Table")
+
+    def populate_table(self,data:Iterable) -> None:
+        """Populates the Songs table"""
+        
+        command = f"""
+        INSERT INTO {self.NAME} VALUES
+        (?,?,?,?,?,?,?,?,?)"""
+
+        self.sql_command_single(command,data)
 
 
 

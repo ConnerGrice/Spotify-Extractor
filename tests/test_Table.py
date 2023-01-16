@@ -1,5 +1,5 @@
 import unittest
-from classes.Tables import Playlists
+from classes.Tables import Playlists,Artists
 
 class TestTable(unittest.TestCase):
 
@@ -10,8 +10,6 @@ class TestTable(unittest.TestCase):
     def test_exists(self):
         playlist = Playlists("Database.db")
         self.assertTrue(playlist.check_exists(),"Should exist")
-
-    
 
 
 if __name__ == "__main__":
