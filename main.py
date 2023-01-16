@@ -1,7 +1,7 @@
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import cred
-import SQLfuncs
+import classes.Tables as Tables
 import time
 
 #list of scopes: https://developer.spotify.com/documentation/general/guides/authorization/scopes/#user-read-private
@@ -45,13 +45,13 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=cred.clientID,client_se
 playlists = sp.current_user_playlists()
 
 #Establish connection to MySQL database
-connection = SQLfuncs.dbConnection("localhost",cred.userName,cred.userPassword,"spotify")
+connection = Tables.dbConnection("localhost",cred.userName,cred.userPassword,"test")
 
 #Deletes existing data
-SQLfuncs.queryExecute(connection, "DELETE FROM Songs;")
-SQLfuncs.queryExecute(connection, "DELETE FROM Albums;")
-SQLfuncs.queryExecute(connection, "DELETE FROM Artists;")
-SQLfuncs.queryExecute(connection, "DELETE FROM Playlists;")
+Tables.queryExecute(connection, "DELETE FROM Songs;")
+Tables.queryExecute(connection, "DELETE FROM Albums;")
+Tables.queryExecute(connection, "DELETE FROM Artists;")
+Tables.queryExecute(connection, "DELETE FROM Playlists;")
 
 #initialising lists to hold artist and album that appear in user playlists
 artistIDs = []  
@@ -83,7 +83,7 @@ for playlist in playlists['items']:
     INSERT INTO Playlists VALUES
     ({playlistPri},"{playlistName}",{playlistLength},"{playlistOwner}","{playlistImageURL}",{playlistImageH},{playlistImageW});
     """
-    SQLfuncs.queryExecute(connection,query)
+    Tables.queryExecute(connection,query)
 
     #Loops though all the tracks in the track list
     for track in tracks:
@@ -124,7 +124,7 @@ for artist in artsClean:
     query = f"""INSERT INTO Artists VALUES
     ({artistID},"{artistName}","{artistGenres}","{artistImageURL}",{artistImageH},{artistImageW});
     """
-    SQLfuncs.queryExecute(connection,query)
+    Tables.queryExecute(connection,query)
 
     print(f"PROCESSING ARTIST {artistID}/{artsLen}: {artistName}")
 
@@ -153,7 +153,7 @@ for album in albsClean:
     query = f"""INSERT INTO Albums VALUES
     ({albumPri},"{albumName}","{albumImageURL}",{albumImageH},{albumImageW},{artistPri});
     """
-    SQLfuncs.queryExecute(connection,query)
+    Tables.queryExecute(connection,query)
 
     print(f"PROCESSING ALBUM {albumPri}/{albsLen}: {albumName}")
 
@@ -200,7 +200,7 @@ for playlist in playlists['items']:
         query = f"""INSERT INTO Songs VALUES
         ({songPri},"{trackName}",{playlistPri},{trackDuration},{trackDance},{trackTempo},{trackEnergy},{artistPri},{albumPri});
         """
-        SQLfuncs.queryExecute(connection,query)
+        Tables.queryExecute(connection,query)
 
         print(f"PROCESSING TRACK {songPri}/{counter} from {playlist['name']}: {trackName}")
 
