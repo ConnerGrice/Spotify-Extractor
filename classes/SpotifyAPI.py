@@ -34,13 +34,13 @@ class SpotifyAPI():
 
         output = []
         #Loops through playlists and extracts wanted information
-        for playlist in playlist_list:
+        for i, playlist in enumerate(playlist_list):
             id = playlist['id']
             name = playlist['name']
             owner = playlist['owner']['display_name']
             length = playlist['tracks']['total']
             version = playlist['snapshot_id']
-
+            print(f"Processing playlist - {name:>_50}{i+1}/{len(playlist_list)}")
             #Puts info into playlist dataclass
             output.append(Items.PlaylistItem(id,name,owner,length,version))
 
@@ -63,7 +63,6 @@ class SpotifyAPI():
         track_items = []
         #Goes through list of tracks and generates track item objects
         for i,track in enumerate(tracks):
-            print(f"Processing Track {i+1}/{len(tracks)}")
 
             #Gets extra audio data
             track_features = self.sp.audio_features(track['track']['id'])
@@ -76,6 +75,8 @@ class SpotifyAPI():
             energy = track_features[0]['energy']
             artist_id = track['track']['artists'][0]['id']
             album_id = track['track']['album']['id']
+
+            print(f"Processing track - {name:>_50}{i+1}/{len(tracks)}")
 
             track_item = Items.TrackItem(
                 id,
@@ -123,13 +124,14 @@ class SpotifyAPI():
 
         #Loops through track list and gets corresponding album
         for i,track in enumerate(track_list):
-            print(f"Processing album {i+1}/{len(track_list)}")
             album = self.sp.album(track.album_id)
 
             id = album['id']
             name = album['name']
             release_date = album['release_date']
             artist_id = track.artist_id
+            
+            print(f"Processing album - {name:>_50}{i+1}/{len(track_list)}")
             
             album_item = Items.AlbumItem(id,name,release_date,artist_id)
             albums.append(album_item)
@@ -141,13 +143,13 @@ class SpotifyAPI():
 
         #Loops through track list and gets corresponding artist
         for i,track in enumerate(track_list):
-            print(f"Processing artist {i+1}/{len(track_list)}")
             artist = self.sp.artist(track.artist_id)
 
             id = artist['id']
             name = artist['name']
             genres = artist['genres']
 
+            print(f"Processing artist - {name:>_50}{i+1}/{len(track_list)}")
             artist_item = Items.ArtistItem(id,name,genres)
             artists.append(artist_item)
         return artists

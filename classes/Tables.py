@@ -34,7 +34,6 @@ class Table(ABC):
         SELECT name FROM sqlite_master WHERE type='table' AND name='{self.NAME}'"""
 
         self.sql_command_single(check_exists)
-        print(self.NAME)
 
         #Checks if the table exists
         if self.cursor.fetchone() == None:
@@ -42,6 +41,7 @@ class Table(ABC):
         return True
 
     def delete_rows(self) -> None:
+        print("Deleting rows...")
         command = f"""
         DELETE FROM {self.NAME}"""
 
@@ -52,8 +52,8 @@ class Table(ABC):
         pass
 
     @abstractmethod
-    def populate_table(self,data):
-        pass
+    def populate_table(self):
+        print("Populating table...")
 
 class Playlists(Table):
     def __init__(self,db_name) -> None:
@@ -69,11 +69,11 @@ class Playlists(Table):
 
         create = f"""
         CREATE TABLE IF NOT EXISTS "{self.NAME}"(
-            PlaylistID int NOT NULL,
+            PlaylistID char(255) NOT NULL,
             Name char(255) NOT NULL,
             Owner char(255) NOT NULL,
             Length int NOT NULL,
-            Version int NOT NULL,
+            Version char(255) NOT NULL,
             PRIMARY KEY (PlaylistID));
         """
 
@@ -82,7 +82,8 @@ class Playlists(Table):
 
     def populate_table(self,data:Iterable) -> None:
         """Populates the Playlists table"""
-        
+        super().populate_table(data)
+
         command = f"""
         INSERT INTO {self.NAME} VALUES
         (?,?,?,?,?)"""
@@ -107,7 +108,7 @@ class Artists(Table):
 
         create = F"""
         CREATE TABLE IF NOT EXISTS "{self.NAME}"(
-            ArtistID int NOT NULL,
+            ArtistID char(255) NOT NULL,
             Name char(255) NOT NULL,
             Genre char(255) NOT NULL,
             PRIMARY KEY (ArtistID)
@@ -117,7 +118,7 @@ class Artists(Table):
     
     def populate_table(self,data:Iterable) -> None:
         """Populates the Artists table"""
-        
+        super().populate_table(data)
         command = f"""
         INSERT INTO {self.NAME} VALUES
         (?,?,?)"""
@@ -139,7 +140,7 @@ class Albums(Table):
 
         create = F"""
         CREATE TABLE IF NOT EXISTS "{self.NAME}"(
-            AlbumID int NOT NULL,
+            AlbumID char(255) NOT NULL,
             Name char(255) NOT NULL,
             ReleaseDate date NOT NULL,
             ArtistID int NOT NULL,
@@ -152,7 +153,7 @@ class Albums(Table):
 
     def populate_table(self,data:Iterable) -> None:
         """Populates the Albums table"""
-        
+        super().populate_table(data)
         command = f"""
         INSERT INTO {self.NAME} VALUES
         (?,?,?,?)"""
@@ -174,7 +175,7 @@ class Songs(Table):
 
         create = f"""
         CREATE TABLE IF NOT EXISTS "{self.NAME}"(
-            SongID int NOT NULL,
+            SongID char(255) NOT NULL,
             Name char(255) NOT NULL,
             Duration int NOT NULL,
             Dance float NOT NULL,
@@ -194,7 +195,7 @@ class Songs(Table):
 
     def populate_table(self,data:Iterable) -> None:
         """Populates the Songs table"""
-        
+        super().populate_table(data)
         command = f"""
         INSERT INTO {self.NAME} VALUES
         (?,?,?,?,?,?,?,?,?)"""

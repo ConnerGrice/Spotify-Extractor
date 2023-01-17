@@ -14,4 +14,6 @@ class TestItem(unittest.TestCase):
         result = playlist1 == playlist2
         self.assertFalse(result)
 
-        
+
+if __name__ == "__main__":
+    unittest.main()

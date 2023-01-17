@@ -79,4 +79,5 @@ class TestSpotifyAPI(unittest.TestCase):
         result = api.remove_dup_albums([track1, track2, track3])
         self.assertEqual(len(result),3)
 
-        
+if __name__ == "__main__":
+    unittest.main()
