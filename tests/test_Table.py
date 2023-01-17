@@ -1,5 +1,5 @@
 import unittest
-from classes.Tables import Playlists,Artists
+from classes.Tables import Table,Playlists,Artists
 from dataclasses import astuple
 from classes import Items
 
@@ -45,17 +45,13 @@ class TestTable(unittest.TestCase):
         artists.sql_command_single(select)
         self.assertIsNone(artists.cursor.fetchone())
 
-
-    
     def test_name(self):
         playlist = Playlists("Test.db")
         self.assertEqual(playlist.NAME,"Playlists","Should be named Playlist")
 
     def test_exists(self):
         playlist = Playlists("Test.db")
-        self.assertTrue(playlist.check_exists(),"Should exist")
-    
-    
+        self.assertTrue(playlist.check_exists(),"Should exist")    
 
 
 if __name__ == "__main__":

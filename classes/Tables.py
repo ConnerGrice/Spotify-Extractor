@@ -1,4 +1,4 @@
-from typing import Any, Iterable, List
+from typing import Any, Iterable, List, Tuple
 import sqlite3
 from abc import ABC, abstractmethod
 
@@ -12,6 +12,7 @@ class Table(ABC):
         """Executes command with only one argument"""
         try:
             self.cursor.execute(command,inputs)
+            self.database.commit()
         except Exception as e:
             self.database.rollback()
             raise e
@@ -20,6 +21,7 @@ class Table(ABC):
         """Executes command with many arguments"""
         try:
             self.cursor.executemany(command,inputs)
+            self.database.commit()
         except Exception as e:
             self.database.rollback()
             raise e
@@ -47,13 +49,16 @@ class Table(ABC):
 
         self.sql_command_single(command)
 
+    def close_table(self) -> None:
+        self.database.close()
+    
     @abstractmethod
     def create_table(self) -> None:
         pass
 
     @abstractmethod
-    def populate_table(self):
-        print("Populating table...")
+    def populate_table(self,data:List[Tuple]) -> None:
+        pass
 
 class Playlists(Table):
     def __init__(self,db_name) -> None:
@@ -62,7 +67,7 @@ class Playlists(Table):
 
         if not self.check_exists():
             self.create_table()
-            print("Creating Playlists")
+            print("Creating Playlists table...")
 
     def create_table(self) -> None:
         """Creates a Playlists table"""
@@ -80,15 +85,15 @@ class Playlists(Table):
         self.sql_command_single(create)
 
 
-    def populate_table(self,data:Iterable) -> None:
+    def populate_table(self,data:List[Tuple]) -> None:
         """Populates the Playlists table"""
-        super().populate_table(data)
+        print("Populating Playlists table...")
 
         command = f"""
         INSERT INTO {self.NAME} VALUES
-        (?,?,?,?,?)"""
+        (?,?,?,?,?);"""
 
-        self.sql_command_single(command,data)
+        self.sql_command_many(command,data)
 
         
 
@@ -100,7 +105,7 @@ class Artists(Table):
         #Creates table if it doesnt exist
         if not self.check_exists():
             self.create_table()
-            print("Creating Playlists")
+            print("Creating Artists table...")
         
 
     def create_table(self) -> None:
@@ -116,14 +121,14 @@ class Artists(Table):
 
         self.sql_command_single(create)
     
-    def populate_table(self,data:Iterable) -> None:
+    def populate_table(self,data:List[Tuple]) -> None:
         """Populates the Artists table"""
-        super().populate_table(data)
+        print("Populating Artist table...")
         command = f"""
         INSERT INTO {self.NAME} VALUES
         (?,?,?)"""
 
-        self.sql_command_single(command,data)
+        self.sql_command_many(command,data)
 
 class Albums(Table):
     def __init__(self,db_name) -> None:
@@ -133,7 +138,7 @@ class Albums(Table):
         #Creates table if it doesn't exist
         if not self.check_exists():
             self.create_table()
-            print("Creating Playlists")
+            print("Creating Albums table...")
 
     def create_table(self) -> None:
         """Creates an Albums table"""
@@ -151,14 +156,14 @@ class Albums(Table):
         self.sql_command_single(create)
     
 
-    def populate_table(self,data:Iterable) -> None:
+    def populate_table(self,data:List[Tuple]) -> None:
         """Populates the Albums table"""
-        super().populate_table(data)
+        print("Populating Albums table...")
         command = f"""
         INSERT INTO {self.NAME} VALUES
         (?,?,?,?)"""
 
-        self.sql_command_single(command,data)
+        self.sql_command_many(command,data)
 
 class Songs(Table):
     def __init__(self,db_name) -> None:
@@ -168,7 +173,7 @@ class Songs(Table):
         #Creates table if it doesn't exist
         if not self.check_exists():
             self.create_table()
-            print("Creating Playlists")
+            print("Creating Songs table...")
 
     def create_table(self) -> None:
         """Creates a Songs table"""
@@ -193,14 +198,14 @@ class Songs(Table):
         self.sql_command_single(create)
     
 
-    def populate_table(self,data:Iterable) -> None:
+    def populate_table(self,data:List[Tuple]) -> None:
         """Populates the Songs table"""
-        super().populate_table(data)
+        print("Populating Songs table...")
         command = f"""
         INSERT INTO {self.NAME} VALUES
         (?,?,?,?,?,?,?,?,?)"""
 
-        self.sql_command_single(command,data)
+        self.sql_command_many(command,data)
 
 
 

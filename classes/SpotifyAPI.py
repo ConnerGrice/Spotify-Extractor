@@ -40,7 +40,7 @@ class SpotifyAPI():
             owner = playlist['owner']['display_name']
             length = playlist['tracks']['total']
             version = playlist['snapshot_id']
-            print(f"Processing playlist - {name:>_50}{i+1}/{len(playlist_list)}")
+            print(f"Processing playlist - {name:_<50}{i+1}/{len(playlist_list)}")
             #Puts info into playlist dataclass
             output.append(Items.PlaylistItem(id,name,owner,length,version))
 
@@ -76,7 +76,7 @@ class SpotifyAPI():
             artist_id = track['track']['artists'][0]['id']
             album_id = track['track']['album']['id']
 
-            print(f"Processing track - {name:>_50}{i+1}/{len(tracks)}")
+            print(f"Processing track - {playlist.name}/{name:_<50}{i+1}/{len(tracks)}")
 
             track_item = Items.TrackItem(
                 id,
@@ -131,7 +131,7 @@ class SpotifyAPI():
             release_date = album['release_date']
             artist_id = track.artist_id
             
-            print(f"Processing album - {name:>_50}{i+1}/{len(track_list)}")
+            print(f"Processing album - {name:_<50}{i+1}/{len(track_list)}")
             
             album_item = Items.AlbumItem(id,name,release_date,artist_id)
             albums.append(album_item)
@@ -147,9 +147,9 @@ class SpotifyAPI():
 
             id = artist['id']
             name = artist['name']
-            genres = artist['genres']
+            genres = str(artist['genres'])
 
-            print(f"Processing artist - {name:>_50}{i+1}/{len(track_list)}")
+            print(f"Processing artist - {name:_<50}{i+1}/{len(track_list)}")
             artist_item = Items.ArtistItem(id,name,genres)
             artists.append(artist_item)
         return artists

@@ -45,4 +45,4 @@ class AlbumItem(Item):
 @dataclass(eq=False)
 class ArtistItem(Item):
     """A container for relavent artist information"""
-    genre:List[str]
+    genre:str
