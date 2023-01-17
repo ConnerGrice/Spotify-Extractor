@@ -4,3 +4,4 @@ cred.py
 __pycache__
 .vscode
 Database.db
+Test.db
