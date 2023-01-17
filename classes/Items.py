@@ -21,3 +21,17 @@ class TrackItem:
         self.album_id = track['track']['album']['id']
         self.playlist_id = playlist_id
         
+class AlbumItem:
+    """A container for relavent album information"""
+    def __init__(self,album:dict,artist_id:str) -> None:
+        self.id = album['id']
+        self.name = album['name']
+        self.release_date = album['release_date']
+        self.artist_id = artist_id
+
+class ArtistItem:
+    """A container for relavent artist information"""
+    def __init__(self,artist:dict) -> None:
+        self.id = artist['id']
+        self.name = artist['name']
+        self.genre = artist['genres']

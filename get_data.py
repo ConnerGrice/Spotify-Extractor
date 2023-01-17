@@ -12,3 +12,7 @@ api = SpotifyAPI.SpotifyAPI()
 
 playlists = api.get_playlists()
 tracks = api.get_tracks(playlists[0])
+albums = api.get_albums(tracks[0:1])
+
+for album in albums:
+    print(album.id,album.name,album.release_date,album.artist_id)
