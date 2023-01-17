@@ -20,7 +20,7 @@ class TestTable(unittest.TestCase):
     
     def test_populate_attributes(self):
         """Tests that item objects can be passed as data"""
-        playlist = Playlists("Test.db")
+        playlist = Playlists("tests/Test.db")
         playlist.delete_rows()
         data = [astuple(Items.PlaylistItem("id","Testing","Conner",30,"version"))]
         playlist.populate_table(data)
@@ -32,7 +32,7 @@ class TestTable(unittest.TestCase):
 
     def test_delete(self):
         """Tests if rows can be deleted"""
-        artists = Artists("Test.db")
+        artists = Artists("tests/Test.db")
         artists.delete_rows()
         data = [("id","Conner","Funk")]
         artists.populate_table(data)
