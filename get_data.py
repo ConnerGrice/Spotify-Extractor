@@ -5,6 +5,7 @@ from dataclasses import astuple
 from typing import List
 
 def collect_tracks(playlist:List[Items.PlaylistItem]) -> List[Items.TrackItem]:
+    """Collects tracks from a list of playlists"""
     tracks = []
     for playlist in playlist:
         tracks.extend(api.get_tracks(playlist))
@@ -12,43 +13,64 @@ def collect_tracks(playlist:List[Items.PlaylistItem]) -> List[Items.TrackItem]:
     return tracks
 
 def populate(item_list:List[Items.Item],table:Tables.Table) -> None:
+    """Inserts data into a given table object"""
     data = [astuple(item) for item in item_list]
     table.populate_table(data)
 
-db_name = "Database.db"
+def populate_close(table:Tables.Table,data:List[Items.Item]) -> None:
+    """Removes any existing rows before populating the table, then closing the connection"""
+    table.delete_rows()
+    populate(data,table)
+    table.close_table()
 
-
-
+#Initialize API controller
 api = SpotifyAPI.SpotifyAPI()
 
+#Gets a list of users playlists
 playlists = api.get_playlists()
 
-tracks = collect_tracks(playlists[0:1])
+#Gets all tracks from each playlist
+tracks = collect_tracks(playlists)
 
+#Cleans the data to remove duplicates
 no_dup_artists = api.remove_dup_artists(tracks)
 no_dup_albums = api.remove_dup_albums(tracks)
 
+#Gets a list of albums and artists from the tracks in users playlists
 albums = api.get_albums(no_dup_albums)
 artists = api.get_artists(no_dup_artists)
 
+#Declares the name of the database
+db_name = "Database.db"
+
+#Initializes and populates the playlists table
 playlist_table = Tables.Playlists(db_name)
-playlist_table.delete_rows()
-populate(playlists,playlist_table)
-playlist_table.close_table()
+populate_close(playlist_table,playlists)
 
+# playlist_table.delete_rows()
+# populate(playlists,playlist_table)
+# playlist_table.close_table()
 
+#Initializes and populates the tracks table
 track_table = Tables.Songs(db_name)
-track_table.delete_rows()
-populate(tracks,track_table)
-track_table.close_table()
+populate_close(track_table,tracks)
 
+# track_table.delete_rows()
+# populate(tracks,track_table)
+# track_table.close_table()
+
+#Initialize and populates the albums table
 album_table = Tables.Albums(db_name)
-album_table.delete_rows()
-populate(albums,album_table)
-album_table.close_table()
+populate_close(album_table,albums)
 
+# album_table.delete_rows()
+# populate(albums,album_table)
+# album_table.close_table()
 
+#Initialize and populates the artists table
 artist_table = Tables.Artists(db_name)
-artist_table.delete_rows()
-populate(artists,artist_table)
-artist_table.close_table()
+populate_close(artist_table,artists)
+
+# artist_table.delete_rows()
+# populate(artists,artist_table)
+# artist_table.close_table()

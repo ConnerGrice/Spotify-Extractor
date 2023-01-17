@@ -189,7 +189,7 @@ class Songs(Table):
             ArtistID int NOT NULL,
             AlbumID int NOT NULL,
             PlaylistID int NOT NULL,
-            PRIMARY KEY(SongID),
+            PRIMARY KEY(SongID,PlaylistID),
             FOREIGN KEY (ArtistID) REFERENCES Artists(ArtistID),
             FOREIGN KEY (AlbumID) REFERENCES Albums(AlbumID),
             FOREIGN KEY (PlaylistID) REFERENCES Playlists(PlaylistID)

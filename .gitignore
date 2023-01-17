@@ -3,3 +3,4 @@ Spotify.code-workspace
 cred.py
 __pycache__
 .vscode
+Database.db
