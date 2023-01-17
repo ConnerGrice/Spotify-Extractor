@@ -3,7 +3,8 @@ import sqlite3
 from abc import ABC, abstractmethod
 
 class Table(ABC):
-    def __init__(self,db_name:str):
+    """Base class for specific tables objects"""
+    def __init__(self,db_name:str) -> None:
         self.database = sqlite3.connect(db_name)
         self.cursor = self.database.cursor()
 
@@ -40,7 +41,6 @@ class Table(ABC):
             return False
         return True
 
-
     @abstractmethod
     def create_table(self) -> None:
         pass
@@ -49,12 +49,8 @@ class Table(ABC):
     def populate_table(self,data):
         pass
 
-    @abstractmethod
-    def select_rows(self) -> List:
-        pass
-
 class Playlists(Table):
-    def __init__(self,database):
+    def __init__(self,database) -> None:
         super().__init__(database)
         self.NAME = "Playlists"
 
@@ -87,15 +83,11 @@ class Playlists(Table):
 
         self.sql_command_single(command,data)
 
-    def select_rows(self,*,id=None,name=None,owner=None,length=None,version=None) -> List:
-        search_dict = {key:value for (key,value) in locals().items() if key != 'self'}
-        search_args = tuple([value for value in search_dict.values()])
-
-        return search_args
+        
 
 class Artists(Table):
-    def __init__(self,database):
-        super().__init__(database)
+    def __init__(self,db_name) -> None:
+        super().__init__(db_name)
         self.NAME = "Artists"
 
         #Creates table if it doesnt exist
@@ -112,7 +104,7 @@ class Artists(Table):
             ArtistID int NOT NULL,
             Name char(255) NOT NULL,
             Genre char(255) NOT NULL,
-            PRIMARY KEY(ArtistID)
+            PRIMARY KEY (ArtistID)
         );"""
 
         self.sql_command_single(create)
@@ -127,8 +119,8 @@ class Artists(Table):
         self.sql_command_single(command,data)
 
 class Albums(Table):
-    def __init__(self,database):
-        super().__init__(database)
+    def __init__(self,db_name) -> None:
+        super().__init__(db_name)
         self.NAME = "Albums"
 
         #Creates table if it doesn't exist
@@ -141,11 +133,11 @@ class Albums(Table):
 
         create = F"""
         CREATE TABLE IF NOT EXISTS "{self.NAME}"(
-            AblumID int NOT NULL,
+            AlbumID int NOT NULL,
             Name char(255) NOT NULL,
             ReleaseDate date NOT NULL,
             ArtistID int NOT NULL,
-            PRIMARY(AlbumID),
+            PRIMARY KEY (AlbumID),
             FOREIGN KEY (ArtistID) REFERENCES Artists(ArtistID)
         );"""
 
@@ -162,8 +154,8 @@ class Albums(Table):
         self.sql_command_single(command,data)
 
 class Songs(Table):
-    def __init__(self,database):
-        super().__init__(database)
+    def __init__(self,db_name) -> None:
+        super().__init__(db_name)
         self.NAME = "Songs"
     
         #Creates table if it doesn't exist
@@ -174,8 +166,8 @@ class Songs(Table):
     def create_table(self) -> None:
         """Creates a Songs table"""
 
-        create = """
-        CREATE TABLE IF NOT EXISTS "Songs"(
+        create = f"""
+        CREATE TABLE IF NOT EXISTS "{self.NAME}"(
             SongID int NOT NULL,
             Name char(255) NOT NULL,
             Duration int NOT NULL,
@@ -183,7 +175,7 @@ class Songs(Table):
             Tempo float NOT NULL,
             Energy float NOT NULL,
             ArtistID int NOT NULL,
-            AblumID int NOT NULL,
+            AlbumID int NOT NULL,
             PlaylistID int NOT NULL,
             PRIMARY KEY(SongID),
             FOREIGN KEY (ArtistID) REFERENCES Artists(ArtistID),

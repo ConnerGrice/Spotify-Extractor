@@ -2,7 +2,6 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import cred
 import classes.Tables as Tables
-import time
 
 #list of scopes: https://developer.spotify.com/documentation/general/guides/authorization/scopes/#user-read-private
 #list of methods: https://spotipy.readthedocs.io/en/master/#getting-started
@@ -22,19 +21,6 @@ def getTracks(playlistID):
         tracks.extend(results['items'])
     return tracks
 
-#Gets the image info for a playlist or artist
-def getImage(item,size):
-
-    #If no image is given, return null
-    if len(item['images']) == 0:
-        return "null","null","null"
-
-    itemURL = item['images'][size]['url']
-    itemH = item['images'][size]['height']
-    itemW = item['images'][size]['width']
-
-    return itemURL,itemH,itemW
-
 #Dictates what methods can be used
 scope= "playlist-read-private user-read-private"
 
@@ -43,15 +29,6 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=cred.clientID,client_se
 
 #Gets current users saved playlist info
 playlists = sp.current_user_playlists()
-
-#Establish connection to MySQL database
-connection = Tables.dbConnection("localhost",cred.userName,cred.userPassword,"test")
-
-#Deletes existing data
-Tables.queryExecute(connection, "DELETE FROM Songs;")
-Tables.queryExecute(connection, "DELETE FROM Albums;")
-Tables.queryExecute(connection, "DELETE FROM Artists;")
-Tables.queryExecute(connection, "DELETE FROM Playlists;")
 
 #initialising lists to hold artist and album that appear in user playlists
 artistIDs = []  
