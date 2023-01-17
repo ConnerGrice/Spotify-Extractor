@@ -41,6 +41,12 @@ class Table(ABC):
             return False
         return True
 
+    def delete_rows(self) -> None:
+        command = f"""
+        DELETE FROM {self.NAME}"""
+
+        self.sql_command_single(command)
+
     @abstractmethod
     def create_table(self) -> None:
         pass
@@ -50,8 +56,8 @@ class Table(ABC):
         pass
 
 class Playlists(Table):
-    def __init__(self,database) -> None:
-        super().__init__(database)
+    def __init__(self,db_name) -> None:
+        super().__init__(db_name)
         self.NAME = "Playlists"
 
         if not self.check_exists():

@@ -93,6 +93,30 @@ class SpotifyAPI():
         
         return track_items
     
+    def remove_dup_artists(self, track_list:List[Items.TrackItem]) -> List[Items.TrackItem]:
+        """Removes all tracks with the same artist"""
+        new_dict = dict()
+        #Loops through tracks
+        for track in track_list:
+            #if a track artist id is not already in the dict, add it
+            if track.artist_id not in new_dict:
+                new_dict[track.artist_id] = track
+
+        #Only get the object values
+        return list(new_dict.values())
+
+    def remove_dup_albums(self, track_list:List[Items.TrackItem]) -> List[Items.TrackItem]:
+        """Removes all tracks in the same album"""
+        new_dict = dict()
+        #Loops through tracks
+        for track in track_list:
+            #If a track album id is not in the dict, add it
+            if track.album_id not in new_dict:
+                new_dict[track.album_id] = track
+
+        #Only output the objects
+        return list(new_dict.values())
+
     def get_albums(self,track_list:List[Items.TrackItem]) -> List[Items.AlbumItem]:
         """Gets the albums from a list of tracks"""
         albums = []

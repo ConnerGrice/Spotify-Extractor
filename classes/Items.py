@@ -1,20 +1,27 @@
 from dataclasses import dataclass
 from typing import List
 
-@dataclass
-class PlaylistItem:
-    """Container for playlist information"""
+@dataclass(eq=False)
+class Item:
+    """Base class for spotify objects"""
     id:str
     name:str
+
+    def __eq__(self, other) -> bool:
+        """Items are only compared if they have the same id"""
+        return self.id == other.id    
+
+@dataclass(eq=False)
+class PlaylistItem(Item):
+    """Container for playlist information"""
     owner:str
     length:int
     version:str
 
-@dataclass
-class TrackItem:
+
+@dataclass(eq=False)
+class TrackItem(Item):
     """A container for relavent track information"""
-    id:str
-    name:str
     duration:int
     dance:float
     tempo:float
@@ -23,17 +30,19 @@ class TrackItem:
     album_id:str
     playlist_id:str
 
-@dataclass
-class AlbumItem:
+    def same_artist_as(self,other) -> bool:
+        return self.artist_id == other.artist.id
+    
+    def same_album_as(self,other) -> bool:
+        return self.album_id == other.album_id
+
+@dataclass(eq=False)
+class AlbumItem(Item):
     """A container for relavent album information"""
-    id:str
-    name:str
     release_date:str
     artist_id:str
 
-@dataclass
-class ArtistItem:
+@dataclass(eq=False)
+class ArtistItem(Item):
     """A container for relavent artist information"""
-    id:str
-    name:str
     genre:List[str]
