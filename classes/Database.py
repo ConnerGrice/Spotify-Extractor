@@ -1,5 +1,6 @@
 import sqlite3
 import pandas as pd
+import numpy as np
 from typing import Any,Iterable
 from itertools import chain
 
@@ -52,13 +53,14 @@ class Database:
 
         command = f"""SELECT name FROM pragma_table_info('{table}') ORDER BY cid;"""
 
-        data = self.sql_command_single(command)
+        self.sql_command_single(command)
 
         columns = self.cursor.fetchall()
         items = list(chain(*columns))
         return items
     
     def collect_table_info(self) -> dict[str,list[str]]:
+        """Collects the table titles and column names from the database"""
         output = {}
         tables = self.get_tables()
         for table in tables:
@@ -66,6 +68,29 @@ class Database:
             output[table] = columns
         
         return output
+
+    def select_from(self,table:str,columns:list[str]) -> dict[str,list[str]]:
+        
+        id_column = self.table_info[table][0]
+
+        command = f"SELECT {id_column}"
+
+        for column in columns:
+            command += f",{column}"
+
+        command += f" FROM '{table}'"
+
+        print(command)
+
+        self.sql_command_single(command)
+
+        data = np.array(self.cursor.fetchall())
+        print(data[:,0])
+        print(data[:,1:])
+
+        data = pd.DataFrame(data[:,1:],index=data[:,0],columns=columns)
+        return data
+
 
 
 
