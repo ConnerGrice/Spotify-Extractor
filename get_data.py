@@ -47,30 +47,14 @@ db_name = "Database.db"
 playlist_table = Tables.Playlists(db_name)
 populate_close(playlist_table,playlists)
 
-# playlist_table.delete_rows()
-# populate(playlists,playlist_table)
-# playlist_table.close_table()
-
 #Initializes and populates the tracks table
 track_table = Tables.Songs(db_name)
 populate_close(track_table,tracks)
-
-# track_table.delete_rows()
-# populate(tracks,track_table)
-# track_table.close_table()
 
 #Initialize and populates the albums table
 album_table = Tables.Albums(db_name)
 populate_close(album_table,albums)
 
-# album_table.delete_rows()
-# populate(albums,album_table)
-# album_table.close_table()
-
 #Initialize and populates the artists table
 artist_table = Tables.Artists(db_name)
 populate_close(artist_table,artists)
-
-# artist_table.delete_rows()
-# populate(artists,artist_table)
-# artist_table.close_table()

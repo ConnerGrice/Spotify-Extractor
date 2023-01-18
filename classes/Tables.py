@@ -202,7 +202,7 @@ class Songs(Table):
         """Populates the Songs table"""
         print("Populating Songs table...")
         command = f"""
-        INSERT INTO {self.NAME} VALUES
+        INSERT OR IGNORE INTO {self.NAME} VALUES
         (?,?,?,?,?,?,?,?,?)"""
 
         self.sql_command_many(command,data)

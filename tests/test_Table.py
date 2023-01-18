@@ -65,6 +65,22 @@ class TestTable(unittest.TestCase):
         except sqlite3.IntegrityError as e:
             self.fail(e)
 
+    def test_track_ignore(self):
+        """Tests if compund primary keys works"""
+        tracks = Songs("tests/Test.db")
+        tracks.delete_rows()
+        track1 = Items.TrackItem("id","Track1",23,1.0,1.0,1.0,"art_id","alb_id","play_id")
+        track2 = Items.TrackItem("id","Track1",23,1.0,1.0,1.0,"art_id","alb_id","play_id_diff")
+        track3 = Items.TrackItem("id","Track1",23,1.0,1.0,1.0,"art_id","alb_id","play_id_diff")
+        data = [astuple(track1),astuple(track2),astuple(track3)]
+
+        try:
+            tracks.populate_table(data)
+        except sqlite3.IntegrityError as e:
+            self.fail(e)
+
+        tracks.sql_command_single("SELECT * FROM Songs")
+        self.assertEqual(len(tracks.cursor.fetchall()),2)
 
 if __name__ == "__main__":
     unittest.main()
