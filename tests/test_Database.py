@@ -1,7 +1,8 @@
 import unittest
 import pandas as pd
-from pandas.util.testing import assert_frame_equal
+
 from classes.Tables import Playlists,Songs,Albums,Artists
+from classes.Items import ArtistItem
 from classes.Database import Database
 
 class TestDatabase(unittest.TestCase):
@@ -54,12 +55,52 @@ class TestDatabase(unittest.TestCase):
 
         result = db.select_from(table,columns)
 
-        expected = pd.DataFrame([["Conner","Funk"],["Conner2","Funk"]],columns=columns,index=["123","124"])
+        expected = [("123","Conner","Funk"),("124","Conner2","Funk")]
 
-        assert_frame_equal(result, expected)
+        self.assertEqual(result, expected)
 
+    def test_select_single(self):
+        artists = Artists("tests/Test.db")
+        artists.delete_rows()
+        artists.populate_table([("123","Conner","Funk"),("124","Conner2","Funk")])
+        artists.close_table()
 
+        db = Database("tests/Test.db")
 
+        result = db.select_single_id("Artists","123")
+        self.assertEqual(result,["123","Conner","Funk"])
+
+    def test_insert(self):
+        artists = Artists("tests/Test.db")
+        artists.delete_rows()
+        artists.populate_table([("123","Conner","Funk"),("124","Conner2","Funk")])
+        artists.close_table()
+
+        db = Database("tests/Test.db")
+
+        new = ArtistItem("1235","ConnerAgain","Rock")
+        db.insert("Artists",new)
+
+        data = db.select_from("Artists",["Name","Genre"])
+        expected = [("123","Conner","Funk"),("124","Conner2","Funk"),("1235","ConnerAgain","Rock")]
+
+        self.assertEqual(data,expected)
+
+    def test_replace(self):
+        artists = Artists("tests/Test.db")
+        artists.delete_rows()
+        artists.populate_table([("123","Conner","Funk"),("124","Conner2","Funk")])
+        artists.close_table()
+
+        db = Database("tests/Test.db")
+
+        new = ArtistItem("123","ConnerAgain","Rock")
+        db.insert("Artists",new)
+
+        data = db.select_from("Artists",["Name","Genre"])
+        expected = [("124","Conner2","Funk"),("123","ConnerAgain","Rock")]
+
+        self.assertEqual(data,expected)
 
 if __name__ == '__main__':
     unittest.main()

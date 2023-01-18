@@ -1,7 +1,9 @@
 import sqlite3
 import pandas as pd
 import numpy as np
-from typing import Any,Iterable
+from classes.Items import Item
+from typing import Any,Iterable,List
+from dataclasses import astuple
 from itertools import chain
 
 class Database:
@@ -69,8 +71,8 @@ class Database:
         
         return output
 
-    def select_from(self,table:str,columns:list[str]) -> dict[str,list[str]]:
-        
+    def select_from(self,table:str,columns:list[str]) -> pd.DataFrame:
+        """Allows selection of columns of data"""
         id_column = self.table_info[table][0]
 
         command = f"SELECT {id_column}"
@@ -80,16 +82,28 @@ class Database:
 
         command += f" FROM '{table}'"
 
-        print(command)
+        self.sql_command_single(command)
+
+        data = self.cursor.fetchall()
+        return data
+
+    def select_single_id(self,table:str,id:str) -> List:
+        """Allows for the selection of a single entry using its primary key"""
+        id_column = self.table_info[table][0]
+        command = f"SELECT * FROM {table} WHERE {id_column} = '{id}'"
 
         self.sql_command_single(command)
 
-        data = np.array(self.cursor.fetchall())
-        print(data[:,0])
-        print(data[:,1:])
-
-        data = pd.DataFrame(data[:,1:],index=data[:,0],columns=columns)
+        data = self.cursor.fetchall()
+        data = list(chain(*data))
         return data
+
+    def insert(self,table:str,item:Item) -> None:
+        """Allows for the insertion or replacement of an entry"""
+        item_data = astuple(item)
+
+        command = f"INSERT OR REPLACE INTO {table} VALUES {item_data}"
+        self.sql_command_single(command)
 
 
 
