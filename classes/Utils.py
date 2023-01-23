@@ -15,23 +15,22 @@ def comparison(old:pd.Series, new:pd.Series) -> pd.DataFrame:
 
     return diff
 
-def what_change(diff:pd.DataFrame) -> bool:
+def what_change(diff:pd.DataFrame) -> list[bool]:
     """Finds what kind of change was made to the playlists"""
+    outcomes = []
 
     for item in diff.values:
         if been_added(item):
-            print(item,"Added")
-            return True
+            outcomes.append(True)
             #Insert into database
         elif been_removed(item):
-            print(item,"Removed")
-            return False
+            outcomes.append(False)
             #Delete from database
         else:
-            print(item,"Modified")
-            return True
+            outcomes.append(True)
             #Insert into database
 
+    return outcomes
 def been_added(row) -> bool:
     """Determines whether a new playlist has been added"""
     return pd.isnull(row[0]) and not pd.isnull(row[1])
@@ -41,16 +40,18 @@ def been_removed(row) -> bool:
     return pd.isnull(row[1]) and not pd.isnull(row[0]) 
 
 def collect_from_ids(db:Database,child_table:str,parent_table:str,id:str) -> list[str]:
+    """Collects all the items of a table based on a foreign key"""
+
+    #Gets the column name for both tables
     child_id_col = db.table_info[child_table][0]
     parent_id_col = db.table_info[parent_table][0]
 
+    #Gets the selected items 
     items = db.select_with_contraint(child_table,[child_id_col],parent_id_col,id)
     items = list(chain(*items))
     return items
 
-#6:Added
-#2:Removed
-old = pd.Series(['1','2','3','4','5'],index = [1,2,3,4,5],name="Test_old")
-new = pd.Series(['1','3',"s",'5','6'],index = [1,3,4,5,6],name="Test_new")
-#print(pd.notna(np.array(['d','e']).any()))
-comparison(old, new)
+def get_everything_id(db:Database,table:str) -> list[str]:
+    items = db.select_from(table,None)
+    items = list(chain(*items))
+    return items

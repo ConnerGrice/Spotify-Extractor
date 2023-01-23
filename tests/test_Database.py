@@ -21,10 +21,13 @@ class TestDatabase(unittest.TestCase):
         results = db.get_tables()
         db.close_table()
 
-        self.assertEqual(results,['Songs','Artists','Playlists','Albums'])
+        self.assertEqual(results,['Songs','Playlists','Artists','Albums'])
 
     def test_get_colmuns(self):
         """Tests the databases ability to get the colmun names"""
+        aritsts = Artists("tests/Test.db")
+        aritsts.close_table()
+        
         db = Database("tests/Test.db")
 
         results = db.get_columns("Artists")
@@ -147,6 +150,32 @@ class TestDatabase(unittest.TestCase):
         result = db.select_with_contraint("Songs",["SongID","Name"],"PlaylistID",'"playlist1"')
         expected = [("1","Song1"),("2","Song2"),("3","Song3"),("6","Song6")]
         self.assertEqual(expected,result)
+
+    def test_delete_with_contraint(self):
+        songs = Songs("tests/Test.db")
+        songs.delete_rows()
+
+        data = [
+            ("1","Song1",12,1.0,1.0,1.0,"artistID1","albumID1","playlist1"),
+            ("2","Song2",12,1.0,1.0,1.0,"artistID1","albumID1","playlist1"),
+            ("3","Song3",12,1.0,1.0,1.0,"artistID1","albumID1","playlist1"),
+            ("4","Song4",12,1.0,1.0,1.0,"artistID1","albumID1","playlist2"),
+            ("5","Song5",12,1.0,1.0,1.0,"artistID1","albumID1","playlist3"),
+            ("6","Song6",12,1.0,1.0,1.0,"artistID1","albumID1","playlist1"),
+        ]
+
+        songs.populate_table(data)
+
+        songs.close_table()
+
+        db = Database("tests/Test.db")      
+        db.delete_with_contraint("Songs","PlaylistID",[("playlist2",),("playlist1",)])
+        result = db.select_from("Songs",["PlaylistID"])
+        expected = [("5","playlist3")]
+        self.assertEqual(result, expected)
+
+        
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -77,8 +77,9 @@ class Database:
 
         command = f"SELECT {id_column}"
 
-        for column in columns:
-            command += f",{column}"
+        if columns:
+            for column in columns:
+                command += f",{column}"
 
         command += f" FROM '{table}'"
 
@@ -111,6 +112,11 @@ class Database:
         data = self.cursor.fetchall()
         data = list(chain(*data))
         return data
+
+    def delete_with_contraint(self,table:str,constraint:str,data:list[tuple]) -> None:
+        """Deletes entires to a table using a constraint"""
+        command = f"DELETE FROM {table} WHERE {constraint} = ?"
+        self.sql_command_many(command,data)
 
     def insert(self,table:str,item:Item) -> None:
         """Allows for the insertion or replacement of an entry"""

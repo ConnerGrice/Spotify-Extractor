@@ -1,6 +1,6 @@
 from classes.Database import Database
 from classes.SpotifyAPI import SpotifyAPI
-from classes.Items import PlaylistItem
+from classes import Utils
 import pandas as pd
 import numpy as np
 #Initialize database and api
@@ -9,7 +9,7 @@ api = SpotifyAPI()
 
 #Gets a set of version codes from the database
 old_playlists = np.array(db.select_from("Playlists",["Version"]))
-old_playlists = pd.Series(old_playlists[:,1],index=old_playlists[:,0],name="Version")
+old_playlists_s = pd.Series(old_playlists[:,1],index=old_playlists[:,0],name="Version")
 
 #Gets a set of version codes from spotify
 new_playlists = api.get_playlists()
@@ -17,20 +17,25 @@ new_playlist_ids = [item.id for item in new_playlists]
 new_playlist_versions = [item.version for item in new_playlists]
 new_playlists_s = pd.Series(new_playlist_versions,name="Versions",index=new_playlist_ids)
 
-print(old_playlists.head())
-print(new_playlists.head())
+#Gets a dataframe of all the changes in the playlists
+difference = Utils.comparison(old_playlists_s,new_playlists_s)
 
-#Gets the IDs of the playlists that have been added/modified
-different_playlists = new_playlists_s.isin(old_playlists)
-different_playlists = different_playlists.loc[different_playlists == False].index
+#Generates a list of bool representing the type of change
+#With each element corresponding to the same element in the difference dataframe
+changes = Utils.what_change(difference)
 
-print(different_playlists)
+#Goes through each playlist that has changed
+for i,j in zip(difference.index,changes):
+    #If the playlist was removed
+    if not j:
+        #Gets a list of removed songs and converts them into a list of tuples
+        removed_songs = Utils.collect_from_ids(db,"Songs","Playlists",f'"{i}"')
+        removed_songs = [(s,) for s in removed_songs]
+        
+        #Gets a list of all the artists and albums in the old database
+        artist_ids = Utils.get_everything_id(db,"Artists")
+        album_ids = Utils.get_everything_id(db,"Albums")
 
-#Goes through playlists and searches them in the database
-for id in different_playlists:
-    playlist = db.select_single_id("Playlists",id)
-    if playlist:
-        playlist_id,name,owner,length,version = playlist
-        playlist_item = PlaylistItem(playlist_id,name,owner,length,version)
-        print(playlist_id,name,owner,length,version)
-
+        """DELETES SONGS OF REMOVED PLAYLIST"""
+        #db.delete_with_contraint("Songs","SongID",removed_songs)
+        

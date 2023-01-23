@@ -64,5 +64,28 @@ class TestUtils(unittest.TestCase):
         expected = ["1","2","3","6"]
         self.assertEqual(result, expected)
 
+    def test_get_everything(self):
+        songs = Songs("tests/Test.db")
+        songs.delete_rows()
+
+        data = [
+            ("1","Song1",12,1.0,1.0,1.0,"artistID1","albumID1","playlist1"),
+            ("2","Song2",12,1.0,1.0,1.0,"artistID1","albumID1","playlist1"),
+            ("3","Song3",12,1.0,1.0,1.0,"artistID1","albumID1","playlist1"),
+            ("4","Song4",12,1.0,1.0,1.0,"artistID1","albumID1","playlist2"),
+            ("5","Song5",12,1.0,1.0,1.0,"artistID1","albumID1","playlist3"),
+            ("6","Song6",12,1.0,1.0,1.0,"artistID1","albumID1","playlist1"),
+        ]
+
+        songs.populate_table(data)
+
+        songs.close_table()
+
+        db = Database("tests/Test.db")
+
+        result = Utils.get_everything_id(db,"Songs")
+        expected = ["1","2","3","4","5","6"]
+        self.assertEqual(result,expected)      
+
 if __name__ == '__main__':
     unittest.main()
