@@ -102,5 +102,51 @@ class TestDatabase(unittest.TestCase):
 
         self.assertEqual(data,expected)
 
+    def test_select_with_contraint(self):
+        songs = Songs("tests/Test.db")
+        songs.delete_rows()
+
+        data = [
+            ("1","Song1",12,1.0,1.0,1.0,"artistID1","albumID1","playlist1"),
+            ("2","Song1",12,1.0,1.0,1.0,"artistID1","albumID1","playlist1"),
+            ("3","Song1",12,1.0,1.0,1.0,"artistID1","albumID1","playlist1"),
+            ("4","Song1",12,1.0,1.0,1.0,"artistID1","albumID1","playlist2"),
+            ("5","Song1",12,1.0,1.0,1.0,"artistID1","albumID1","playlist3"),
+            ("6","Song1",12,1.0,1.0,1.0,"artistID1","albumID1","playlist1"),
+        ]
+
+        songs.populate_table(data)
+
+        songs.close_table()
+
+        db = Database("tests/Test.db")
+
+        result = db.select_with_contraint("Songs",["SongID"],"PlaylistID",'"playlist1"')
+        expected = [("1",),("2",),("3",),("6",)]
+        self.assertEqual(expected,result)
+
+    def test_select_with_contraint_multi(self):
+        songs = Songs("tests/Test.db")
+        songs.delete_rows()
+
+        data = [
+            ("1","Song1",12,1.0,1.0,1.0,"artistID1","albumID1","playlist1"),
+            ("2","Song2",12,1.0,1.0,1.0,"artistID1","albumID1","playlist1"),
+            ("3","Song3",12,1.0,1.0,1.0,"artistID1","albumID1","playlist1"),
+            ("4","Song4",12,1.0,1.0,1.0,"artistID1","albumID1","playlist2"),
+            ("5","Song5",12,1.0,1.0,1.0,"artistID1","albumID1","playlist3"),
+            ("6","Song6",12,1.0,1.0,1.0,"artistID1","albumID1","playlist1"),
+        ]
+
+        songs.populate_table(data)
+
+        songs.close_table()
+
+        db = Database("tests/Test.db")
+
+        result = db.select_with_contraint("Songs",["SongID","Name"],"PlaylistID",'"playlist1"')
+        expected = [("1","Song1"),("2","Song2"),("3","Song3"),("6","Song6")]
+        self.assertEqual(expected,result)
+
 if __name__ == '__main__':
     unittest.main()

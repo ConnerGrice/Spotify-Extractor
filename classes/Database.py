@@ -71,7 +71,7 @@ class Database:
         
         return output
 
-    def select_from(self,table:str,columns:list[str]) -> pd.DataFrame:
+    def select_from(self,table:str,columns:list[str]) -> list[tuple[str]]:
         """Allows selection of columns of data"""
         id_column = self.table_info[table][0]
 
@@ -86,6 +86,20 @@ class Database:
 
         data = self.cursor.fetchall()
         return data
+
+    def select_with_contraint(self,table:str,values:list[str],constraint:str,constraint_value:str) -> list[tuple[str]]:
+        """Allows for a selection with a specific constraint"""
+        #Turns list of strings into a string of the correct format
+        value_string = ""
+        for value in values:
+            value_string += value+","
+        
+        value_string = value_string.strip(",")
+
+        command = f"SELECT {value_string} FROM {table} WHERE {constraint} = {constraint_value}"
+        self.sql_command_single(command)
+        data = self.cursor.fetchall()
+        return data 
 
     def select_single_id(self,table:str,id:str) -> List:
         """Allows for the selection of a single entry using its primary key"""

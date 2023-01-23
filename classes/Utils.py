@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from itertools import chain
 
 def comparison(old:pd.Series, new:pd.Series) -> pd.DataFrame:
     """Compares old and new list of playlists and finds the differences"""
@@ -37,7 +38,11 @@ def been_removed(row) -> bool:
     """Determines whether a playlist has been removed"""
     return pd.isnull(row[1]) and not pd.isnull(row[0]) 
 
-
+def collect_from_ids(db,child_table,parent_table:str,id) -> list[str]:
+    child_id_col = db.table_info[child_table][0]
+    parent_id_col = db.table_info[parent_table][0]
+    items = db.select_with_constraint(child_table,[child_id_col],parent_id_col,id)
+    items = list(chain(*items))
 
 #6:Added
 #2:Removed
