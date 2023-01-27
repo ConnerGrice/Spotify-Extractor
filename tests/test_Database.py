@@ -2,7 +2,7 @@ import unittest
 import pandas as pd
 
 from classes.Tables import Playlists,Songs,Albums,Artists
-from classes.Items import ArtistItem
+from classes.Items import ArtistItem,TrackItem
 from classes.Database import Database
 
 class TestDatabase(unittest.TestCase):
@@ -82,7 +82,7 @@ class TestDatabase(unittest.TestCase):
         db = Database("tests/Test.db")
 
         new = ArtistItem("1235","ConnerAgain","Rock")
-        db.insert("Artists",new)
+        db.insert_single("Artists",new)
 
         data = db.select_from("Artists",["Name","Genre"])
         expected = [("123","Conner","Funk"),("124","Conner2","Funk"),("1235","ConnerAgain","Rock")]
@@ -98,7 +98,7 @@ class TestDatabase(unittest.TestCase):
         db = Database("tests/Test.db")
 
         new = ArtistItem("123","ConnerAgain","Rock")
-        db.insert("Artists",new)
+        db.insert_single("Artists",new)
 
         data = db.select_from("Artists",["Name","Genre"])
         expected = [("124","Conner2","Funk"),("123","ConnerAgain","Rock")]
@@ -173,6 +173,29 @@ class TestDatabase(unittest.TestCase):
         result = db.select_from("Songs",["PlaylistID"])
         expected = [("5","playlist3")]
         self.assertEqual(result, expected)
+
+    def test_insert_many(self):
+        songs = Songs("tests/Test.db")
+        songs.delete_rows()
+        songs.close_table()
+
+        data = [
+            TrackItem("1","Song1",12,1.0,1.0,1.0,"artistID1","albumID1","playlist1"),
+            TrackItem("2","Song2",12,1.0,1.0,1.0,"artistID1","albumID1","playlist1"),
+            TrackItem("3","Song3",12,1.0,1.0,1.0,"artistID1","albumID1","playlist1"),
+            TrackItem("4","Song4",12,1.0,1.0,1.0,"artistID1","albumID1","playlist2"),
+            TrackItem("5","Song5",12,1.0,1.0,1.0,"artistID1","albumID1","playlist3"),
+            TrackItem("6","Song6",12,1.0,1.0,1.0,"artistID1","albumID1","playlist1"),
+        ]
+
+        db = Database("tests/Test.db")
+        db.insert_many("Songs",data)
+
+        results = db.select_from("Songs",None)
+        expected = [("1",),("2",),("3",),("4",),("5",),("6",)]
+        self.assertEqual(results, expected)
+
+
 
         
 

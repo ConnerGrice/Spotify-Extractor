@@ -1,3 +1,4 @@
-from classes.Database import Database
+string = "Hello"
+string += ",".join(["?"]*8)
 
-db = Database("Database.db")
+print(string)

@@ -3,6 +3,7 @@ from classes.SpotifyAPI import SpotifyAPI
 from classes import Utils
 import pandas as pd
 import numpy as np
+
 #Initialize database and api
 db = Database("Database-copy.db")
 api = SpotifyAPI()
@@ -23,43 +24,36 @@ difference = Utils.comparison(old_playlists_s,new_playlists_s)
 #Generates a list of bool representing the type of change
 #With each element corresponding to the same element in the difference dataframe
 changes = Utils.what_change(difference)
+print(difference)
 
 #Goes through each playlist that has changed
 for i,j in zip(difference.index,changes):
     #If the playlist was removed
     if not j:
-        print(i,j)
-        # #Gets a list of removed songs and converts them into a list of tuples
-        # removed_songs = Utils.collect_from_ids(db,"Songs","Playlists",f'"{i}"')
-        # removed_songs = [(s,i) for s in removed_songs]
-
-        # #Deletes songs that are part of the given playlist
-        # db.delete_with_contraint_and("Songs",["SongID","PlaylistID"],removed_songs)
-
+        #Deletes songs that are inside playlist
         Utils.delete_songs(db,i)
 
         #Deletes playlist entry
         db.delete_with_contraint("Playlists","PlaylistID",[(i,)])
 
+        #Deletes artist or album entries if there is no song connected to them
         Utils.cascade_delete_from_songs(db,"Artists")
         Utils.cascade_delete_from_songs(db,"Albums")
-        
-        # #Gets a list of all the artists and albums from database before deleting songs
-        # artist_ids_before = set(Utils.get_everything_id(db,"Artists"))
-        # album_ids_before = set(Utils.get_everything_id(db,"Albums"))
+    elif j:
+        playlist = api.get_single_playlist(i)
+        db.insert_single("Playlists",playlist)
 
-        # #Get all artists and albumsIDs using remaining songs, removes duplicates
-        # artist_ids_after = set(np.array(db.select_from("Songs",["ArtistID"]))[:,1])
-        # album_ids_after = set(np.array(db.select_from("Songs",["AlbumID"]))[:,1])
+        tracks = api.get_tracks(playlist)
+        db.insert_many("Songs",tracks)
 
-        # #Gets a set containing the artists and albums that no longer connect to any songs in the database.
-        # removed_artists = artist_ids_before - artist_ids_after
-        # removed_artists = [(a,) for a in removed_artists]
+        #Cleans the data to remove duplicates
+        no_dup_artists = api.remove_dup_artists(tracks)
+        no_dup_albums = api.remove_dup_albums(tracks)
 
-        # removed_albums = album_ids_before - album_ids_after
-        # removed_albums = [(a,) for a in removed_albums]
+        #Gets a list of albums and artists from the tracks in users playlists
+        albums = api.get_albums(no_dup_albums)
+        artists = api.get_artists(no_dup_artists)
 
-        # print("DELETING")
-        # db.delete_with_contraint("Artists","ArtistID",removed_artists)
-        # db.delete_with_contraint("Albums","AlbumID",removed_albums)
-        # print("DONE")
+        db.insert_many("Albums",albums)
+        db.insert_many("Artists",artists)
+

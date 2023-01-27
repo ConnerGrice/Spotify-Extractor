@@ -130,12 +130,21 @@ class Database:
         self.sql_command_many(command,data)
 
 
-    def insert(self,table:str,item:Item) -> None:
+    def insert_single(self,table:str,item:Item) -> None:
         """Allows for the insertion or replacement of an entry"""
         item_data = astuple(item)
 
         command = f"INSERT OR REPLACE INTO {table} VALUES {item_data}"
         self.sql_command_single(command)
+    
+    def insert_many(self,table:str,items:list[Item]) -> None:
+        """Allows for the insertion or replacement of many entires"""
+        data = [astuple(item) for item in items]
+        command = f"INSERT OR REPLACE INTO {table} VALUES ("
+
+        command += ",".join(["?"]*len(data[0])) + ")"
+
+        self.sql_command_many(command,data)
 
 
 

@@ -46,6 +46,20 @@ class SpotifyAPI():
 
         return output
 
+    def get_single_playlist(self,playlist_id:str) -> Items.PlaylistItem:
+        """Gets info from a single playlist using its id"""
+        playlist = self.sp.playlist(playlist_id)
+
+        id = playlist['id']
+        name = playlist['name']
+        owner = playlist['owner']['display_name']
+        length = playlist['tracks']['total']
+        version = playlist['snapshot_id']
+
+        print(f"Processing playlist - {name:_<50}")
+        return Items.PlaylistItem(id,name,owner,length,version)
+
+
     def get_tracks(self,playlist:Items.PlaylistItem) -> List[Items.TrackItem]:
         """Gets all tracks in a playlist"""
 
