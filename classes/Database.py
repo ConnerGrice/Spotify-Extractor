@@ -11,7 +11,13 @@ class Database:
         self.database = sqlite3.connect(db_name)
         self.cursor = self.database.cursor()
 
+
+        """
+        table_info = {table1:[primary_key,header2,...],
+                    table2:[primary_key,header2,...],
+                    ...}"""
         self.table_info = self.collect_table_info()
+
 
     def sql_command_single(self,command:str,inputs:Any=()) -> None:
         """Executes command with only one argument"""
@@ -118,7 +124,7 @@ class Database:
         command = f"DELETE FROM {table} WHERE {constraint} = ?"
         self.sql_command_many(command,data)
 
-    def delete_with_contraint_and(self,table:str,constraint:list[str],data:list[tuple]) ->None:
+    def delete_with_contraint_and(self,table:str,constraint:list[str],data:list[tuple]) -> None:
         """Deletes entires to a table using multiple constrains and AND condition"""
         command = f"DELETE FROM {table} WHERE {constraint[0]} = ? AND {constraint[1]} = ?"
         self.sql_command_many(command,data)

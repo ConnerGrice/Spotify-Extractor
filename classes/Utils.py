@@ -54,6 +54,32 @@ def collect_from_ids(db:Database,child_table:str,parent_table:str,id:str) -> lis
     return items
 
 def get_everything_id(db:Database,table:str) -> list[str]:
+    """Gets a list of primary keys for all entries in a given table"""
     items = db.select_from(table,None)
     items = list(chain(*items))
     return items
+
+def delete_songs(db:Database,playlist_id:str) -> None:
+    """Deletes all the songs from a given playlist from the database"""
+    removed_songs = collect_from_ids(db,"Songs","Playlists",f'"{playlist_id}"')
+    removed_songs = [(s,playlist_id) for s in removed_songs]
+
+    db.delete_with_contraint_and("Songs",["SongID","PlaylistID"],removed_songs)
+
+def cascade_delete_from_songs(db:Database,table:str) -> None:
+    """Removes all info from other tables if they are not connected to a song in the database"""
+    #Gets id column from table
+    table_id = db.table_info[table][0]
+
+    #Gets ids of all items in the table
+    before_ids = set(get_everything_id(db,table))
+
+    #Gets ids of all items connected to remaining songs
+    after_ids = set(np.array(db.select_from("Songs",[table_id]))[:,1])
+
+    #Gets the items that are no longer connected to songs
+    removed_ids = before_ids - after_ids
+    removed_ids = [(a,) for a in removed_ids]
+
+    #Delete from database
+    db.delete_with_contraint(table,table_id,removed_ids)
