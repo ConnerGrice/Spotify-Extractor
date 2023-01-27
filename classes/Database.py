@@ -118,6 +118,12 @@ class Database:
         command = f"DELETE FROM {table} WHERE {constraint} = ?"
         self.sql_command_many(command,data)
 
+    def delete_with_contraint_and(self,table:str,constraint:list[str],data:list[tuple]) ->None:
+        """Deletes entires to a table using multiple constrains and AND condition"""
+        command = f"DELETE FROM {table} WHERE {constraint[0]} = ? AND {constraint[1]} = ?"
+        self.sql_command_many(command,data)
+
+
     def insert(self,table:str,item:Item) -> None:
         """Allows for the insertion or replacement of an entry"""
         item_data = astuple(item)

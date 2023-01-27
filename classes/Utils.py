@@ -16,7 +16,9 @@ def comparison(old:pd.Series, new:pd.Series) -> pd.DataFrame:
     return diff
 
 def what_change(diff:pd.DataFrame) -> list[bool]:
-    """Finds what kind of change was made to the playlists"""
+    """Finds what kind of change was made to the playlists
+    True: Modified or added
+    False: Removed"""
     outcomes = []
 
     for item in diff.values:
