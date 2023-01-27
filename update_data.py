@@ -4,7 +4,7 @@ from classes import Utils
 import pandas as pd
 import numpy as np
 #Initialize database and api
-db = Database("Database.db")
+db = Database("Database-copy.db")
 api = SpotifyAPI()
 
 #Gets a set of version codes from the database
@@ -32,10 +32,16 @@ for i,j in zip(difference.index,changes):
         removed_songs = Utils.collect_from_ids(db,"Songs","Playlists",f'"{i}"')
         removed_songs = [(s,) for s in removed_songs]
         
-        #Gets a list of all the artists and albums in the old database
-        artist_ids = Utils.get_everything_id(db,"Artists")
-        album_ids = Utils.get_everything_id(db,"Albums")
+        #Gets a list of all the artists and albums fromdatabase before deleting songs
+        artist_ids_before = {Utils.get_everything_id(db,"Artists")}
+        album_ids_before = {Utils.get_everything_id(db,"Albums")}
 
         """DELETES SONGS OF REMOVED PLAYLIST"""
         #db.delete_with_contraint("Songs","SongID",removed_songs)
-        
+
+        #Get all artists and albumsIDs
+        artist_ids_after = {Utils.get_everything_id(db,"Artists")}
+        album_ids_after = {Utils.get_everything_id(db,"Albums")}
+
+        removed_artists = artist_ids_after - artist_ids_before
+        removed_albums = album_ids_after - album_ids_before
