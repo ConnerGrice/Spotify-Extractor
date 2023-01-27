@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 
 #Initialize database and api
-db = Database("Database-copy.db")
+db = Database("Database.db")
 api = SpotifyAPI()
 
 #Gets a set of version codes from the database
