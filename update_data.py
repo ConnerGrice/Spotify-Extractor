@@ -40,20 +40,23 @@ for i,j in zip(difference.index,changes):
         Utils.cascade_delete_from_songs(db,"Artists")
         Utils.cascade_delete_from_songs(db,"Albums")
     elif j:
+        #Gets info on updated playlist and puts it into the database
         playlist = api.get_single_playlist(i)
         db.insert_single("Playlists",playlist)
 
+        #Gets a list of all the songs and thier info and puts them into the database
         tracks = api.get_tracks(playlist)
         db.insert_many("Songs",tracks)
 
-        #Cleans the data to remove duplicates
+        #Removes any dluplicate artists and ablums
         no_dup_artists = api.remove_dup_artists(tracks)
         no_dup_albums = api.remove_dup_albums(tracks)
 
-        #Gets a list of albums and artists from the tracks in users playlists
+        #Gets a list of albums and artists from the tracks in playlist
         albums = api.get_albums(no_dup_albums)
         artists = api.get_artists(no_dup_artists)
 
+        #Updates database with new albums and artists
         db.insert_many("Albums",albums)
         db.insert_many("Artists",artists)
 
