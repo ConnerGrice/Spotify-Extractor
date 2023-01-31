@@ -94,6 +94,14 @@ class Database:
         data = self.cursor.fetchall()
         return data
 
+    def select_all(self,table:str) -> pd.DataFrame:
+        """Allows the user to select all columns from a table"""
+        columns = self.table_info[table][1:]
+        data = np.array(self.select_from(table,columns))
+        df = pd.DataFrame(data[:,1:],index=data[:,0],columns=columns)
+        df = df.apply(pd.to_numeric,errors="ignore")
+        return df
+
     def select_with_contraint(self,table:str,values:list[str],constraint:str,constraint_value:str) -> list[tuple[str]]:
         """Allows for a selection with a specific constraint"""
         #Turns list of strings into a string of the correct format

@@ -1,4 +1,5 @@
 from classes.Database import Database
+from classes.DataManager import DataManager
 import pandas as pd
 import numpy as np
 from bokeh.plotting import figure,output_file,show
@@ -9,26 +10,26 @@ columns = ["Dance","Tempo","Energy","PlaylistID"]
 
 #Getting the data from database
 db = Database("Database.db")
-data = np.array(db.select_from("Songs",columns))
-db.close_table()
 
-#Converting data into the correct format
-df = pd.DataFrame(data[:,1:],index=data[:,0],columns=columns)
-df = df.apply(pd.to_numeric,errors="ignore")
+songs = DataManager(db.select_all("Songs"))
+playlists = DataManager(db.select_all("Playlists"))
+albums = DataManager(db.select_all("Albums"))
+artists = DataManager(db.select_all("Artists"))
 
-
-
-
-output_file("output.html")
-
-source = ColumnDataSource(df)
-playlists = df.PlaylistID.unique()
-view = CDSView(filter=GroupFilter(group=playlists[1],column_name="PlaylistID"))
-
-p = figure(title= "Dance vs Energy",x_axis_label="Dance",y_axis_label="Energy")
+print(songs.map_of(playlists.column["Name"],"PlaylistID"))
 
 
-p.scatter(x="Dance",y="Energy",source=source,view=view)
+
+# output_file("output.html")
+
+# source = ColumnDataSource(df)
+# playlists = df.PlaylistID.unique()
+# view = CDSView(filter=GroupFilter(group=playlists[1],column_name="PlaylistID"))
+
+# p = figure(title= "Dance vs Energy",x_axis_label="Dance",y_axis_label="Energy")
 
 
-show(p)
+# p.scatter(x="Dance",y="Energy",source=source,view=view)
+
+
+# #show(p)
