@@ -1,9 +1,11 @@
 from classes.Database import Database
 from classes.DataManager import DataManager
+from classes.FigureGenerator import FigureGenerator
 import pandas as pd
 import numpy as np
 from bokeh.plotting import figure,output_file,show
 from bokeh.models import ColumnDataSource,CDSView, GroupFilter
+
 
 #Columns to be looked at
 columns = ["Dance","Tempo","Energy","PlaylistID"]
@@ -16,9 +18,9 @@ playlists = DataManager(db.select_all("Playlists"))
 albums = DataManager(db.select_all("Albums"))
 artists = DataManager(db.select_all("Artists"))
 
-print(songs.map_of(playlists.column["Name"],"PlaylistID"))
+gen = FigureGenerator(songs,playlists,albums,artists)
 
-
+gen.dance_energy()
 
 # output_file("output.html")
 
