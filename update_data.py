@@ -60,3 +60,4 @@ for i,j in zip(difference.index,changes):
         db.insert_many("Albums",albums)
         db.insert_many("Artists",artists)
 
+db.close_table()

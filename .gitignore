@@ -5,3 +5,4 @@ __pycache__
 .vscode
 Database.db
 tests/Test.db
+output.html
