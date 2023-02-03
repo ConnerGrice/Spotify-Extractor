@@ -1,48 +1,58 @@
 from classes.DataManager import DataManager
 from bokeh.plotting import figure,output_file,show
-from bokeh.models import ColumnDataSource,CDSView,BooleanFilter,GroupFilter,CheckboxGroup,CustomJS
+from bokeh.models import ColumnDataSource,CheckboxGroup,CustomJS,HoverTool
 from bokeh.layouts import row
 import pandas as pd
 
-class EventHandler:
-    def dance_energy_handler(attr,old,new):
-        print("test",new)
-        print("test",old)
-
 class FigureGenerator:
+    """Represents functions that will be used to generate plots"""
     def __init__(self,songs:DataManager,playlists:DataManager,albums:DataManager,artists:DataManager) -> None:
+        #Data from database
         self.songs = songs
         self.playlists = playlists
         self.albums = albums
         self.artists = artists
 
-        self.handler = EventHandler()
-
+        #Output file for HTML
         output_file("output.html")
 
-    def dance_energy_handler(attr,old,new):
-        print("test",new)
-        print("test",old)
-
     def dance_energy(self):
+        """Generates a plot containing all songs and their energy and dance ratings.
+        Allows for the user to filter out songs by playlist."""
+
+        #Data to be plotted
         dance = self.songs.column["Dance"]
         energy = self.songs.column["Energy"]
+        song_name = self.songs.column["Name"]
 
+        #Mapping playlist IDs to their respective names
         names = self.songs.column["PlaylistID"]
         names = names.map(self.songs.map_of(self.playlists.column["Name"],"PlaylistID"))
-        data = pd.concat([dance,energy,names],axis=1)
         
-        labels = list(data.PlaylistID.unique())
-        data["PlaylistID"] = data["PlaylistID"].map({name:label for (name,label) in zip(labels,range(len(labels)))})
-        source = ColumnDataSource(data)
+        #Joining data together
+        data = pd.concat([song_name,dance,energy,names],axis=1)
 
-        p = figure(title= "Dance vs Energy",x_axis_label="Dance",y_axis_label="Energy")
-        p.scatter(x="Dance",y="Energy",source=source)
+        hover = HoverTool(tooltips=[
+            ("Name","@Name"),
+            ("Playlist", "@PlaylistID")
+        ])
+        
+        #Mapping playlist IDs to the active state given by the checkbox gorup
+        labels = list(data.PlaylistID.unique())
+        data["Playlist_activeID"] = data["PlaylistID"].map({name:label for (name,label) in zip(labels,range(len(labels)))})
+        
+        #Defining the data to be used in the plot
+        source = ColumnDataSource(data)
+        filtered = ColumnDataSource(data)
+
+        p = figure(title= "Dance vs Energy",x_axis_label="Dance",y_axis_label="Energy",tools=[hover])
+        p.scatter(x="Dance",y="Energy",source=filtered)
 
         check_boxes = CheckboxGroup(labels=labels,active=list(range(len(labels))))
 
-        callback = CustomJS(args=dict(source=source),code="""
+        callback = CustomJS(args=dict(source=source,filtered=filtered),code="""
             var data = source.data;
+            var f_data = filtered.data;
             var new_index = [];
             var new_dance = [];
             var new_energy = [];
@@ -53,7 +63,7 @@ class FigureGenerator:
             var index = data['index'];
             var dance = data['Dance'];
             var energy = data['Energy'];
-            var labels = data['PlaylistID'];
+            var labels = data['Playlist_activeID'];
 
             for (let i=0;i<dance.length;i++){
                 for (let j=0;j<active.length;j++){
@@ -67,12 +77,12 @@ class FigureGenerator:
                 }
             }   
 
-            data['Dance'] = new_dance;
-            data['Energy'] = new_energy;
-            data['PlaylistID'] = new_label;
-            data['index'] = new_index
+            f_data['Dance'] = new_dance;
+            f_data['Energy'] = new_energy;
+            f_data['Playlist_activeID'] = new_label;
+            f_data['index'] = new_index
 
-            source.change.emit();
+            filtered.change.emit();
         """)
 
         check_boxes.js_on_change("active",callback)
