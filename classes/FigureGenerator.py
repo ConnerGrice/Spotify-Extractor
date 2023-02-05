@@ -28,13 +28,17 @@ class FigureGenerator:
         #Mapping playlist IDs to their respective names
         names = self.songs.column["PlaylistID"]
         names = names.map(self.songs.map_of(self.playlists.column["Name"],"PlaylistID"))
+
+        artist_names = self.songs.column["ArtistID"]
+        artist_names = artist_names.map(self.songs.map_of(self.artists.column["Name"],"ArtistID"))
+
         
         #Joining data together
-        data = pd.concat([song_name,dance,energy,names],axis=1)
+        data = pd.concat([dance,energy,names,song_name,artist_names],axis=1)
 
         hover = HoverTool(tooltips=[
             ("Name","@Name"),
-            ("Artist","@Artist"),
+            ("Artist","@ArtistID"),
             ("Playlist", "@PlaylistID")
         ])
         
@@ -49,7 +53,8 @@ class FigureGenerator:
             Energy=[],
             Playlist_activeID=[],
             PlaylistID=[],
-
+            Name=[],
+            ArtistID=[]
             ))
 
         p = figure(title= "Dance vs Energy",x_axis_label="Dance",y_axis_label="Energy",tools=[hover])
@@ -57,20 +62,27 @@ class FigureGenerator:
 
         check_boxes = CheckboxGroup(labels=labels,active=[])
 
+
+        """TODO: Give the song name and artist to the datapoints"""
         callback = CustomJS(args=dict(source=source,filtered=filtered),code="""
             var data = source.data;
             var f_data = filtered.data;
+
             var new_dance = [];
             var new_energy = [];
             var new_label = [];
             var new_playlist = [];
+            var new_name = [];
+            var new_artist = [];
 
             const active = cb_obj.active;
             
             var dance = data['Dance'];
             var energy = data['Energy'];
             var labels = data['Playlist_activeID'];
-            var playlist = data['PlaylistID']
+            var playlist = data['PlaylistID'];
+            var name = data['Name'];
+            var artist = data['ArtistID'];
 
             for (let i=0;i<dance.length;i++){
                 for (let j=0;j<active.length;j++){
@@ -79,6 +91,8 @@ class FigureGenerator:
                         new_energy.push(energy[i]);
                         new_label.push(labels[i]);
                         new_playlist.push(playlist[i]);
+                        new_name.push(name[i]);
+                        new_artist.push(artist[i])
 
                     }
                 }
@@ -88,6 +102,8 @@ class FigureGenerator:
             f_data['Energy'] = new_energy;
             f_data['Playlist_activeID'] = new_label;
             f_data['PlaylistID'] = new_playlist;
+            f_data['Name'] = new_name;
+            f_data['ArtistID'] = new_artist;
 
             filtered.change.emit();
         """)
