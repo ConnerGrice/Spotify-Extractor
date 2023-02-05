@@ -1,6 +1,6 @@
 from classes.DataManager import DataManager
 from bokeh.plotting import figure,output_file,show
-from bokeh.models import ColumnDataSource,CheckboxGroup,CustomJS,HoverTool
+from bokeh.models import ColumnDataSource,CheckboxGroup,CustomJS,HoverTool,Range1d
 from bokeh.layouts import row
 import pandas as pd
 
@@ -12,6 +12,10 @@ class FigureGenerator:
         self.playlists = playlists
         self.albums = albums
         self.artists = artists
+
+        self.green = "#1DB954"
+        self.black = "#191414"
+        self.white = "#FFFFFF"
 
         #Output file for HTML
         output_file("output.html")
@@ -57,13 +61,30 @@ class FigureGenerator:
             ArtistID=[]
             ))
 
-        p = figure(title= "Dance vs Energy",x_axis_label="Dance",y_axis_label="Energy",tools=[hover])
-        p.scatter(x="Dance",y="Energy",source=filtered)
+        #Formatting figure
+        p = figure(title= "Dance vs Energy",
+                   x_axis_label="Dance",
+                   y_axis_label="Energy",
+                   width = 400,
+                   height = 400,
+                   background_fill_color=self.black,
+                   x_range = Range1d(0,1),
+                   y_range = Range1d(0,1),
+                   tools=[hover])
+        
+        p.grid.grid_line_color = None
+        p.axis.axis_label_text_font_style = 'bold'
+        
+        #Plotting points
+        p.scatter(x="Dance",
+                  y="Energy",
+                  source=filtered,
+                  color=self.green)
 
-        check_boxes = CheckboxGroup(labels=labels,active=[])
+        #Generating playlist check boxes
+        check_boxes = CheckboxGroup(labels=labels,active=[],height=200)
 
-
-        """TODO: Give the song name and artist to the datapoints"""
+        #Called when check boxes are clicked
         callback = CustomJS(args=dict(source=source,filtered=filtered),code="""
             var data = source.data;
             var f_data = filtered.data;
@@ -107,10 +128,54 @@ class FigureGenerator:
 
             filtered.change.emit();
         """)
-
         check_boxes.js_on_change("active",callback)
-
         
         show(row(check_boxes,p))
+
+    def get_genres(self,genres_series:pd.Series) -> pd.Series:
+        """Converts string of genres for each song into a list"""
+        final = []
+        for song,genres in genres_series.items():
+            genres = genres.strip("[]")
+            genres_list = genres.split(",")
+            out = []
+            for item in genres_list:
+                out.append(item.strip(" ''"))
+            
+            final.append(tuple([song,out]))
+        
+        index,values = zip(*final)
+        return pd.Series(values,index,name="Genres")
+
+
+    def avg_genre(self) -> pd.Series:
+        """Gets a series of the playlists and thier average genres (mode)"""
+        
+        #Gets genres and maps then to each song
+        artist_genre = self.songs.column["ArtistID"]
+        artist_genre = artist_genre.map(self.songs.map_of(self.artists.column["Genre"],"ArtistID"))
+
+        #Gets genres in the form of a series of lists
+        genres = self.get_genres(artist_genre)
+
+        #Get playlist ids
+        playlists = self.songs.column["PlaylistID"]
+
+        #Combine playlist ids with genres
+        data = pd.concat([playlists,genres],axis=1)
+        
+        #Groups genres into playlists and finds the mode
+        data = data.explode("Genres")
+        genre_mode = data.groupby("PlaylistID")["Genres"].agg(pd.Series.mode)
+        
+        return genre_mode
+            
+
+
+
+    def avg_bar(self):
+        song_df = self.songs.df
+
+        print(song_df.groupby("PlaylistID").agg(pd.Series.mode))
 
         
