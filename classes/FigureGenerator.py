@@ -130,20 +130,25 @@ class FigureGenerator:
         """)
         check_boxes.js_on_change("active",callback)
         
+        #return check_boxes,p
         show(row(check_boxes,p))
 
     def get_genres(self,genres_series:pd.Series) -> pd.Series:
         """Converts string of genres for each song into a list"""
         final = []
         for song,genres in genres_series.items():
+            #Removes surrounding square brackets and splits words into a list
             genres = genres.strip("[]")
             genres_list = genres.split(",")
             out = []
             for item in genres_list:
+                #Removes trailing spaces and other outer values
                 out.append(item.strip(" ''"))
             
+            #Addes list and song id into a list
             final.append(tuple([song,out]))
         
+        #put values into a final series
         index,values = zip(*final)
         return pd.Series(values,index,name="Genres")
 
@@ -169,13 +174,35 @@ class FigureGenerator:
         genre_mode = data.groupby("PlaylistID")["Genres"].agg(pd.Series.mode)
         
         return genre_mode
-            
 
-
+    def get_avg_playlist(self,column:str) -> pd.Series:
+        """Gets the average of a song value grouped by playlist"""
+        avg = pd.concat([self.songs.column[column],self.songs.column["PlaylistID"]],axis=1)
+        return avg.groupby("PlaylistID").mean()
 
     def avg_bar(self):
-        song_df = self.songs.df
+        """Plots the bar chart comparing average song values to playlists and genres"""
 
-        print(song_df.groupby("PlaylistID").agg(pd.Series.mode))
+        #Collects data
+        avg_dance = self.get_avg_playlist("Dance")
+        avg_energy = self.get_avg_playlist("Energy")
+        avg_tempo = self.get_avg_playlist("Tempo")
+        avg_genre = self.avg_genre()
+        playlist_name = self.playlists.column["Name"]
+        
+        data = pd.concat([avg_dance,avg_energy,avg_tempo,avg_genre,playlist_name],axis=1)
+        print(data)
+        source = ColumnDataSource(data)
+
+        p = figure(title="Things",x_range=source.data["Name"],sizing_mode="scale_width")
+        
+        p.vbar(x="Name",top="Dance",source=source)
+
+        show(p)
+
+    def render(self):
+        #self.dance_energy()
+        self.avg_bar()
+
 
         
