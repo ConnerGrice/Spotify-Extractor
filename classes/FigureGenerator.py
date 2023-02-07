@@ -1,7 +1,8 @@
 from classes.DataManager import DataManager
 from bokeh.plotting import figure,output_file,show
-from bokeh.models import ColumnDataSource,CheckboxGroup,CustomJS,HoverTool,Range1d
-from bokeh.layouts import row
+from bokeh.models import ColumnDataSource,CheckboxGroup,CustomJS,HoverTool,Range1d,RadioButtonGroup
+from bokeh.layouts import row,column
+from bokeh.transform import dodge
 import pandas as pd
 
 class FigureGenerator:
@@ -182,21 +183,22 @@ class FigureGenerator:
 
     def avg_bar(self):
         """Plots the bar chart comparing average song values to playlists and genres"""
-
         #Collects data
         avg_dance = self.get_avg_playlist("Dance")
         avg_energy = self.get_avg_playlist("Energy")
-        avg_tempo = self.get_avg_playlist("Tempo")
         avg_genre = self.avg_genre()
         playlist_name = self.playlists.column["Name"]
-        
-        data = pd.concat([avg_dance,avg_energy,avg_tempo,avg_genre,playlist_name],axis=1)
-        print(data)
+        data = pd.concat([avg_dance,avg_energy,avg_genre,playlist_name],axis=1)
         source = ColumnDataSource(data)
 
-        p = figure(title="Things",x_range=source.data["Name"],sizing_mode="scale_width")
-        
-        p.vbar(x="Name",top="Dance",source=source)
+        #Generates figure
+        p = figure(y_range = Range1d(0,1),title="Playlist average Dance and Energy scores",x_range=source.data["Name"],sizing_mode="scale_width",background_fill_color=self.black)
+        p.xaxis.major_label_orientation = "vertical"
+        p.grid.grid_line_color = None
+
+        #Generates both bars
+        p.vbar(x=dodge('Name',-0.2,range=p.x_range),top="Dance",source=source,legend_label="Dance",width=0.25,color=self.green)
+        p.vbar(x=dodge('Name',0.2,range=p.x_range),top="Energy",source=source,legend_label="Energy",width=0.25,color=self.white)
 
         show(p)
 
