@@ -12,6 +12,4 @@ artists = DataManager(db.select_all("Artists"))
 
 gen = FigureGenerator(songs,playlists,albums,artists)
 
-
-#gen.avg_bar()
 gen.render()

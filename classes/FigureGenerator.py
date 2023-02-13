@@ -66,8 +66,8 @@ class FigureGenerator:
         p = figure(title= "Dance vs Energy",
                    x_axis_label="Dance",
                    y_axis_label="Energy",
-                   width = 400,
-                   height = 400,
+                   width = 800,
+                   height = 800,
                    background_fill_color=self.black,
                    x_range = Range1d(0,1),
                    y_range = Range1d(0,1),
@@ -191,20 +191,38 @@ class FigureGenerator:
         data = pd.concat([avg_dance,avg_energy,avg_genre,playlist_name],axis=1)
         source = ColumnDataSource(data)
 
+        energy = ColumnDataSource(data.sort_values("Energy",ascending=False))
+        dance = ColumnDataSource(data.sort_values("Dance",ascending=False))
+
+
         #Generates figure
-        p = figure(y_range = Range1d(0,1),title="Playlist average Dance and Energy scores",x_range=source.data["Name"],sizing_mode="scale_width",background_fill_color=self.black)
+        p = figure(y_range = Range1d(0,1),title="Playlist average Dance scores",x_range=dance.data["Name"],width=1000,height=400,background_fill_color=self.black)
         p.xaxis.major_label_orientation = "vertical"
         p.grid.grid_line_color = None
 
-        #Generates both bars
-        p.vbar(x=dodge('Name',-0.2,range=p.x_range),top="Dance",source=source,legend_label="Dance",width=0.25,color=self.green)
-        p.vbar(x=dodge('Name',0.2,range=p.x_range),top="Energy",source=source,legend_label="Energy",width=0.25,color=self.white)
+        
+        p2 = figure(y_range = Range1d(0,1),title="Playlist average Energy scores",x_range=energy.data["Name"],width=1000,height=400,background_fill_color=self.black)
+        p2.xaxis.major_label_orientation = "vertical"
+        p2.grid.grid_line_color = None
 
-        show(p)
+        #Generates both bars
+        p.vbar(x="Name",top="Dance",source=dance,legend_label="Dance",width=0.8,color=self.green)
+        p2.vbar(x="Name",top="Energy",source=energy,legend_label="Energy",width=0.8,color=self.white)
+
+        show(column(p,p2))
+
+    def playlist_size(self):
+        """Will generate a pie chart showing the sizes of each playlist compared to others in the profile"""
+        playlist_name = self.playlists.column["Name"]
+        playlist_length = self.playlists.column["Length"]
+
+        data = pd.concat([playlist_name,playlist_length],axis=1)
+        print(data)
+
 
     def render(self):
         #self.dance_energy()
-        self.avg_bar()
-
+        #self.avg_bar()
+        self.playlist_size()
 
         
