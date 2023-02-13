@@ -2,8 +2,11 @@ from classes.DataManager import DataManager
 from bokeh.plotting import figure,output_file,show
 from bokeh.models import ColumnDataSource,CheckboxGroup,CustomJS,HoverTool,Range1d,RadioButtonGroup
 from bokeh.layouts import row,column
-from bokeh.transform import dodge
+from bokeh.transform import cumsum
+from bokeh.colors import HSL
+import random
 import pandas as pd
+import math
 
 class FigureGenerator:
     """Represents functions that will be used to generate plots"""
@@ -20,6 +23,12 @@ class FigureGenerator:
 
         #Output file for HTML
         output_file("output.html")
+        random.seed(1)
+    
+    def colour_generator(self,length:int,index:list) -> pd.Series:
+        """Generates a list of random greenish colours"""
+        colour = [HSL(random.randint(90,140),random.uniform(0.2,1),random.uniform(0.2,0.5)) for _ in range(length)]
+        return pd.Series(colour,name="colours",index=index)
 
     def dance_energy(self):
         """Generates a plot containing all songs and their energy and dance ratings.
@@ -181,7 +190,7 @@ class FigureGenerator:
         avg = pd.concat([self.songs.column[column],self.songs.column["PlaylistID"]],axis=1)
         return avg.groupby("PlaylistID").mean()
 
-    def avg_bar(self):
+    def avg_bar(self) -> None:
         """Plots the bar chart comparing average song values to playlists and genres"""
         #Collects data
         avg_dance = self.get_avg_playlist("Dance")
@@ -196,33 +205,109 @@ class FigureGenerator:
 
 
         #Generates figure
-        p = figure(y_range = Range1d(0,1),title="Playlist average Dance scores",x_range=dance.data["Name"],width=1000,height=400,background_fill_color=self.black)
+        p = figure(y_range = Range1d(0,1),
+                   title="Playlist average Dance scores",
+                   x_range=dance.data["Name"],
+                   width=1000,
+                   height=400,
+                   background_fill_color=self.black
+                   )
+        
         p.xaxis.major_label_orientation = "vertical"
         p.grid.grid_line_color = None
 
+        p2 = figure(y_range = Range1d(0,1),
+                    title="Playlist average Energy scores",
+                    x_range=energy.data["Name"],
+                    width=1000,
+                    height=400,
+                    background_fill_color=self.black
+                    )
         
-        p2 = figure(y_range = Range1d(0,1),title="Playlist average Energy scores",x_range=energy.data["Name"],width=1000,height=400,background_fill_color=self.black)
         p2.xaxis.major_label_orientation = "vertical"
         p2.grid.grid_line_color = None
 
         #Generates both bars
-        p.vbar(x="Name",top="Dance",source=dance,legend_label="Dance",width=0.8,color=self.green)
-        p2.vbar(x="Name",top="Energy",source=energy,legend_label="Energy",width=0.8,color=self.white)
+        p.vbar(x="Name",
+               top="Dance",
+               source=dance,
+               
+               width=0.8,
+               color=self.green)
+        
+        p2.vbar(x="Name",
+                top="Energy",
+                source=energy,
+                
+                width=0.8,
+                color=self.white)
 
-        show(column(p,p2))
+        show(column(p,p2,sizing_mode="stretch_width"))
 
-    def playlist_size(self):
+    def get_sweep(self,data:float,total_sum:int) -> pd.DataFrame:
+        """Calcaultes the angle of a section of a pie chart depending on a ratio"""
+        return (data/total_sum)*math.pi*2
+    
+    def playlist_size(self) -> None:
         """Will generate a pie chart showing the sizes of each playlist compared to others in the profile"""
+        #Collects data
         playlist_name = self.playlists.column["Name"]
         playlist_length = self.playlists.column["Length"]
-
         data = pd.concat([playlist_name,playlist_length],axis=1)
-        print(data)
+    
+        #Pie chart constants
+        X = 0
+        Y = 0
+        RADIUS = 0.85
+
+        #Calculates the percentage of songs contained in each playlist
+        data["angle"] = playlist_length.apply(self.get_sweep,args=(playlist_length.sum(),))
+
+        temp_angle = 0
+        start_angle = []
+        end_angle = []
+        for angle in data["angle"]:
+            start_angle.append(temp_angle)
+            end_angle.append(temp_angle+angle)
+            temp_angle = end_angle[-1]
+
+        data = pd.concat([data,
+                          pd.Series(start_angle,name="Start",index=data.index),
+                          pd.Series(end_angle,name="End",index=data.index),
+                          self.colour_generator(len(data.index),data.index)
+                          ],axis=1)
+
+        source = ColumnDataSource(data.sort_values("Length",ascending=False))
+
+        p = figure(title="Playlist Sizes",
+                   tools='hover',
+                   tooltips="@Name: @Length",
+                   toolbar_location=None,
+                   x_range=(-1,1),
+                   y_range=(-1.3,1.3),
+                   background_fill_color=self.black,
+                   sizing_mode="scale_both")
+        
+        p.grid.grid_line_color = None
+        p.axis.axis_label = None
+        p.axis.visible = False
+
+        p.wedge(x=X,
+                y=Y,
+                radius=RADIUS,
+                start_angle=cumsum("angle",include_zero=True),
+                end_angle=cumsum('angle'),
+                
+                source=source,
+                fill_color="colours",
+                line_color="white")
+
+        show(p)
 
 
     def render(self):
         #self.dance_energy()
-        #self.avg_bar()
-        self.playlist_size()
+        self.avg_bar()
+        #self.playlist_size()
 
         
