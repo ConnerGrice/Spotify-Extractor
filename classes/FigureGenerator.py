@@ -1,9 +1,9 @@
 from classes.DataManager import DataManager
 from bokeh.plotting import figure,output_file,show
-from bokeh.models import ColumnDataSource,CheckboxGroup,CustomJS,HoverTool,Range1d,RadioButtonGroup
+from bokeh.models import ColumnDataSource,CheckboxGroup,CustomJS,HoverTool,Range1d
 from bokeh.layouts import row,column
 from bokeh.transform import cumsum
-from bokeh.colors import HSL
+from bokeh.colors import HSL,RGB
 import random
 import pandas as pd
 import math
@@ -27,7 +27,7 @@ class FigureGenerator:
     
     def colour_generator(self,length:int,index:list) -> pd.Series:
         """Generates a list of random greenish colours"""
-        colour = [HSL(random.randint(90,140),random.uniform(0.2,1),random.uniform(0.2,0.5)) for _ in range(length)]
+        colour = [RGB(random.randint(90,140),random.uniform(0.2,1),random.uniform(0.2,0.5)) for _ in range(length)]
         return pd.Series(colour,name="colours",index=index)
 
     def dance_energy(self):
@@ -306,8 +306,8 @@ class FigureGenerator:
 
 
     def render(self):
-        #self.dance_energy()
+        self.dance_energy()
         self.avg_bar()
-        #self.playlist_size()
+        self.playlist_size()
 
         
